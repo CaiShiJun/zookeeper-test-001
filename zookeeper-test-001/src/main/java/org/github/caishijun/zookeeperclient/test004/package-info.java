@@ -1,0 +1,56 @@
+package org.github.caishijun.zookeeperclient.test004;
+
+/*
+来源网址：https://www.cnblogs.com/wuxl360/p/5817540.html
+
+二、可恢复的ZooKeeper应用
+
+关于分布式计算的第一个误区是“网络是可靠的”。按照他们的观点，程序总是有一个可靠的网络，因此当程序运行在真正的网络中时，往往会出现各种备样的故障。让我们看看各种可能的故障模式，以及能够解决故障的措施，使我们的程序在面对故障时能够及时复原。
+
+2.1 ZooKeeper异常
+在Java API中的每一个ZooKeeper操作都在其throws子句中声明了两种类型的异常，分别是InterruptedException和KeeperException。
+
+（一）InterruptedException异常
+
+如果操作被中断，则会有一个InterruptedException异常被抛出。在Java语言中有一个取消阻塞方法的标准机制，即针对存在阻塞方法的线程调用interrupt()。一个成功的取消操作将产生一个InterruptedException异常。
+
+ZooKeeper也遵循这一机制，因此你可以使用这种方法来取消一个ZooKeeper操作。使用了ZooKeeper的类或库通常会传播 InterruptedException异常，使客户端能够取消它们的操作。InterruptedException异常并不意味着有故障，而是表明相应的操作已经被取消，所以在配置服务的示例中，可以通过传播异常来中止应用程序的运行。
+
+（二）KeeperException异常
+
+(1) 如果ZooKeeper服务器发出一个错误信号或与服务器存在通信问题，抛出的则是KeeperException异常。
+
+①针对不同的错误情况，KeeperException异常存在不同的子类。
+
+例如:　KeeperException.NoNodeException是KeeperException的一个子类，如果你试图针对一个不存在的znode执行操作，抛出的则是该异常。
+
+②每一个KeeperException异常的子类都对应一个关于错误类型信息的代码。
+
+例如:　KeeperException.NoNodeException异常的代码是KeeperException.Code.NONODE
+
+(2) 有两种方法被用来处理KeeperException异常：
+
+①捕捉KeeperException异常，并且通过检测它的代码来决定采取何种补救措施；
+
+②另一种是捕捉等价的KeeperException子类，并且在每段捕捉代码中执行相应的操作。
+
+(3) KeeperException异常分为三大类
+
+① 状态异常
+
+当一个操作因不能被应用于znode树而导致失败时，就会出现状态异常。状态异常产生的原因通常是在同一时间有另外一个进程正在修改znode。例如，如果一个znode先被另外一个进程更新了，根据版本号执行setData操作的进程就会失败，并收到一个KeeperException.BadVersionException异常，这是因为版本号不匹配。程序员通常都知道这种冲突总是存在的，也都会编写代码来进行处理。
+
+一些状态异常会指出程序中的错误，例如KeeperException.NoChildrenForEphemeralsException异常，试图在短暂znode下创建子节点时就会抛出该异常。
+
+② 可恢复异常
+
+可恢复的异常是指那些应用程序能够在同一个ZooKeeper会话中恢复的异常。一个可恢复的异常是通过KeeperException.ConnectionLossException来表示的，它意味着已经丢失了与ZooKeeper的连接。ZooKeeper会尝试重新连接，并且在大多数情况下重新连接会成功，并确保会话是完整的。
+
+但是ZooKeeper不能判断与KeeperException.ConnectionLossException异常相关的操作是否成功执行。这种情况就是部分失败的一个例子。这时程序员有责任来解决这种不确定性，并且根据应用的情况来采取适当的操作。在这一点上，就需要对“幂等”(idempotent)操作和“非幂等”(Nonidempotent)操作进行区分。幂等操作是指那些一次或多次执行都会产生相同结果的操作，例如读请求或无条件执行的setData操作。对于幂等操作，只需要简单地进行重试即可。对于非幂等操作，就不能盲目地进行重试，因为它们多次执行的结果与一次执行是完全不同的。程序可以通过在znode的路径和它的数据中编码信息来检测是否非幂等操怍的更新已经完成。
+
+③不可恢复的异常
+
+在某些情况下，ZooKeeper会话会失效——也许因为超时或因为会话被关闭，两种情况下都会收到KeeperException.SessionExpiredException异常，或因为身份验证失败，KeeperException.AuthFailedException异常。无论上述哪种情况，所有与会话相关联的短暂znode都将丢失，因此应用程序需要在重新连接到ZooKeeper之前重建它的状态。
+
+2.2 可靠地服务配置
+ */
